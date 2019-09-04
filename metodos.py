@@ -17,7 +17,7 @@ def biseccion(f, a, b, tolerancia):
 
     if (f(a)*f(b))<0: #Hay un cero en el medio
         #print("Comienzo el algoritmo")
-    #Mientras el intérvalo es mayor a la tolerancia
+        #Mientras el intérvalo es mayor a la tolerancia
         while(abs(a-b)>tolerancia):
             #Encuentro el punto medio entre a y b
             c =  a + (abs(b-a)*0.5)
