@@ -13,7 +13,8 @@ def biseccion(f, a, b, tolerancia=False, iteraciones=False):
         Parámetros: 
             ->  f: una función que, dado x, devuelve el valor de f(x)
             ->  a y b: números reales iniciales para el método
-            ->  tolerancia: el menor intérvalo entre el cual se encuentra el cero'''
+            ->  tolerancia: el menor intérvalo entre el cual se encuentra el cero
+            ->  iteraciones: la cantidad de iteraciones a realizar en el algoritmo'''
 
     #Si a la función no se le pasa un parámetro para detener las iteraciones devuelve False
     if not (tolerancia or iteraciones):
@@ -49,6 +50,14 @@ def biseccion(f, a, b, tolerancia=False, iteraciones=False):
         pass
         #Ver que devolver en caso de que no haya un cero en el medio, o como implementarlo
 
+def punto_fijo(g, x_i, n):
+    ''' Encuentra el cero de f a partir de g.
+        Parámetros:
+            ->  g: surge de despejar x de f
+            ->  n: la cantidad de iteraciones'''
+    for i in range(n):
+        x_i = g(x_i)
+    return x_i
 
 if __name__ == "__main__":
     f = lambda x: (x + 2) ** 3 - 1  # np.cos(x)
@@ -62,4 +71,3 @@ if __name__ == "__main__":
     cero2 = biseccion(f, a, b, iteraciones=i)
     print("Un cero se encuentra en: ", cero)
     print("Luego de: ", i, " iteraciones el cero es: ", cero2)
-    
