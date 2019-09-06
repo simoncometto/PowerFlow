@@ -8,30 +8,44 @@ Created on Fri Aug 30 15:36:39 2019
 import numpy as np
 
 
-def biseccion(f, a, b, tolerancia):
+def biseccion(f, a, b, tolerancia=False, iteraciones=False):
     ''' Encuentra el cero de f entre a y b mediante el método bisección
         Parámetros: 
             ->  f: una función que, dado x, devuelve el valor de f(x)
             ->  a y b: números reales iniciales para el método
             ->  tolerancia: el menor intérvalo entre el cual se encuentra el cero'''
 
+    #Si a la función no se le pasa un parámetro para detener las iteraciones devuelve False
+    if not (tolerancia or iteraciones):
+        return False
+
     if (f(a)*f(b))<0: #Hay un cero en el medio
-        #print("Comienzo el algoritmo")
-        #Mientras el intérvalo es mayor a la tolerancia
-        while(abs(a-b)>tolerancia):
-            #Encuentro el punto medio entre a y b
-            c =  a + (abs(b-a)*0.5)
-            print(a," | ",c, " | ",b)
-            #Si f(a) y f(c) tienen signo distinto, entonces hubo un cruce por cero entre a y b
-            if(f(a)*f(c)<0):
-                b = c
-            #Sino el cero se encuentra entre b y c
-            else:
-                a = c
-        #print("El cero se encuentra en :", c)
-        return c
+        #El algoritmo se ejecuta hasta llegar a un intervalo de tolerancia menor o igual a "tolerancia"
+        if(tolerancia):
+            #Mientras el intérvalo es mayor a la tolerancia
+            while(abs(a-b)>tolerancia):
+                #Encuentro el punto medio entre a y b
+                c =  a + (abs(b-a)*0.5)
+
+                #Si f(a) y f(c) tienen signo distinto, entonces hubo un cruce por cero entre a y b
+                if(f(a)*f(c)<0):
+                    b = c
+                #Sino el cero se encuentra entre b y c
+                else:
+                    a = c
+            return c
+        elif iteraciones:
+            for i in range(iteraciones):
+                c = a + (abs(b - a) * 0.5)
+
+                # Si f(a) y f(c) tienen signo distinto, entonces hubo un cruce por cero entre a y b
+                if (f(a) * f(c) < 0):
+                    b = c
+                # Sino el cero se encuentra entre b y c
+                else:
+                    a = c
+            return c
     else:    #No se sabe si hay cero en el medio
-        #print("Inicie el algoritmo de nuevo con otro valor de a y b")
         pass
         #Ver que devolver en caso de que no haya un cero en el medio, o como implementarlo
 
@@ -41,7 +55,11 @@ if __name__ == "__main__":
 
     a = float(input("Ingrese a: "))
     b = float(input("Ingrese b: "))
-    tolerancia = float(input("Ingrese la tolerancia: "))
+    t = float(input("Ingrese la tolerancia: "))
+    i = int(input("Ingrese la cantidad de iteraciones: "))
 
-    cero = biseccion(f, a, b, tolerancia)
+    cero = biseccion(f, a, b, tolerancia=t)
+    cero2 = biseccion(f, a, b, iteraciones=i)
     print("Un cero se encuentra en: ", cero)
+    print("Luego de: ", i, " iteraciones el cero es: ", cero2)
+    
