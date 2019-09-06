@@ -54,20 +54,21 @@ def punto_fijo(g, x_i, n):
     ''' Encuentra el cero de f a partir de g.
         Parámetros:
             ->  g: surge de despejar x de f
+            ->  x_i: número real inicial para el método
             ->  n: la cantidad de iteraciones'''
     for i in range(n):
         x_i = g(x_i)
     return x_i
 
 if __name__ == "__main__":
-    f = lambda x: (x + 2) ** 3 - 1  # np.cos(x)
+    f = lambda x: 1*(x**2) - x - 2
 
     a = float(input("Ingrese a: "))
     b = float(input("Ingrese b: "))
-    t = float(input("Ingrese la tolerancia: "))
     i = int(input("Ingrese la cantidad de iteraciones: "))
 
-    cero = biseccion(f, a, b, tolerancia=t)
-    cero2 = biseccion(f, a, b, iteraciones=i)
-    print("Un cero se encuentra en: ", cero)
-    print("Luego de: ", i, " iteraciones el cero es: ", cero2)
+    cero_b = biseccion(f, a, b, iteraciones=i)
+    g = lambda x: (x + 2) ** 0.5
+    cero_pf = punto_fijo(g, b, i)
+    print("Resultado método de bisección:  ", cero_b)
+    print("Resultado método de punto fijo: ", cero_pf)
