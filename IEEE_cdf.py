@@ -54,10 +54,11 @@ with open('ieee14cdf.txt') as cdf:
         for i in range(0,n):
             for j in range(0,n):
                 if j != i:
-                    mat_admitancia[i,i] = mat_admitancia[i,i] + mat_admitancia[i,j]
+                    mat_admitancia[i,i] = mat_admitancia[i,i] - mat_admitancia[i,j]
 
 if __name__ == '__main__':
-
+    print(mat_admitancia)
+    print(voltage_phase)
     mat_plot = mat_admitancia != 0
     plt.matshow(mat_plot)
     plt.show()
