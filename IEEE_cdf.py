@@ -2,6 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def read(archivo):
+    '''Lee un archivo de texto con el formato establecido por la IEEE.
+        Devuelve los valores:
+        ->  n: un escalar indicando la cantidad de nodos del sistema
+        ->  mat_admitancia: una matriz de nxn compleza
+        ->  load: un vector de dim=n complejo P+jQ. La carga de cada nodo.
+        ->  generation: un vector de dim=n complejo P+jQ. La generación de cada nodo
+        ->  voltage_phase: Un vector de pares (nx2) .La tensión y fase en cada nodo (según lo calculado)
+
+        Ejemplo:
+         -> n, mat_admitancia, load, generation, voltage_phase  = cdf.read("ieee14cdf.txt")'''
+
     with open(archivo) as cdf:
             #Leo el archivo hasta llegar a la sección de BUS DATA
             words = ['',]
