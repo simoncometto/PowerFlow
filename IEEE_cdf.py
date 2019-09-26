@@ -1,17 +1,17 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 def read(archivo):
     '''Lee un archivo de texto con el formato establecido por la IEEE.
-        Devuelve los valores:
+
+        :return:
         ->  n: un escalar indicando la cantidad de nodos del sistema
         ->  mat_admitancia: una matriz de nxn compleza
         ->  load: un vector de dim=n complejo P+jQ. La carga de cada nodo.
         ->  generation: un vector de dim=n complejo P+jQ. La generación de cada nodo
-        ->  voltage_phase: Un vector de pares (nx2) .La tensión y fase en cada nodo (según lo calculado)
+        ->  voltage_phase: Un vector de pares (nx2) .La tensión y fase(¡¡¡EN GRADOS!!!) en cada nodo (según lo calculado)
 
         Ejemplo:
-         -> n, mat_admitancia, load, generation, voltage_phase  = cdf.read("ieee14cdf.txt")'''
+         -> n, mat_admitancia, load, generation, voltage_phase, swing_bus  = cdf.read("ieee14cdf.txt")'''
 
     with open(archivo) as cdf:
             #Leo el archivo hasta llegar a la sección de BUS DATA
@@ -41,6 +41,10 @@ def read(archivo):
                 load[i] = complex(float(words[9]) , float(words[10]))
                 generation[i] = complex(float(words[11]) , float(words[12]))
 
+                #Asigno el swing_bus
+                if(int(words[6])==3):
+                    swing_bus = i
+
             #Leo el archivo hasta llegar a la sección de BRANCH DATA
             while words[0] != 'BRANCH':
                 line = cdf.readline()
@@ -67,9 +71,11 @@ def read(archivo):
                     if j != i:
                         mat_admitancia[i,i] = mat_admitancia[i,i] - mat_admitancia[i,j]
 
-            return n, mat_admitancia, load, generation, voltage_phase
+            return n, mat_admitancia, load, generation, voltage_phase, swing_bus
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+
     n, matriz_de_admitacnia, *_ = read("ieee14cdf.txt")
     print(matriz_de_admitacnia)
     mat_plot = matriz_de_admitacnia != 0
