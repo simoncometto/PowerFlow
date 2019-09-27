@@ -77,6 +77,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     n, matriz_de_admitacnia, *_ = read("ieee14cdf.txt")
+
     print(matriz_de_admitacnia)
     mat_plot = matriz_de_admitacnia != 0
     plt.matshow(mat_plot)
