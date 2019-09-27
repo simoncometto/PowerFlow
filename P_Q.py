@@ -11,6 +11,7 @@ def P_Q(mat_admitancia, theta_v, swing_bus=0):
                     theta está en RADIANTES
         -> swing_bus: escalar que indica el bus de referencia. La potencia para este bus no se calcula, y no forma parte del resultado
     :return:
+        -> P_Q un vector de 2*(n-1) donde las primeras n-1 entradas son P y las siguiete Q, calculadas a partir de theta_v y del sistema
     '''
 
     #Si la matriz no está en formato coo se transforma a coo
@@ -30,11 +31,9 @@ def P_Q(mat_admitancia, theta_v, swing_bus=0):
     theta = np.concatenate(([0], theta_v[:n-1]))
     v = np.concatenate(([1], theta_v[n-2:]))
     #v = np.append([1], theta_v[n-1:-1])
-    print(v)
-
+    cantidad = 0
     for i, j, Y in zip(mat_admitancia.row, mat_admitancia.col, mat_admitancia.data):
         #Saltear el swing_bus
-
         if (i == swing_bus):
             continue
 
@@ -56,7 +55,7 @@ def P_Q(mat_admitancia, theta_v, swing_bus=0):
 
     # En realidad para lograr que el algoritmo funcione con el swing bus en cualquier lugar se debería modificar los indices y realizar una doble partición
     # Se une la P y Q en un sólo vector, dejando de lado la primer ubicaicón porque es el swing bus.
-    P_Q = np.append(P[1:-1], Q[1:-1])
+    P_Q = np.append(P[1:], Q[1:])
 
     return P_Q
 
@@ -72,10 +71,9 @@ if __name__ == '__main__':
     theta_v = np.concatenate((phase,v))
     mat = sparse.coo_matrix(mat)
 
-    print(theta_v)
     PandQ = P_Q(mat, theta_v)
 
-    P = PandQ[0:(n-1)]
+    P = PandQ[:(n-1)]
     Q = PandQ[(n-1):-1]
 
     print("Calculated P")
@@ -83,5 +81,5 @@ if __name__ == '__main__':
 
     P = generation.real - load.real
     print("P from the file")
-    print(P[1:-1])
+    print(P[1:])
     #print(Q)
