@@ -1,3 +1,4 @@
+# coding=utf-8
 import numpy as np
 from numpy import deg2rad, rad2deg
 from math import cos, sin
