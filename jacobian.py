@@ -1,3 +1,4 @@
+# coding=utf-8
 import numpy as np
 from scipy import sparse
 from math import sin, cos
@@ -15,7 +16,8 @@ def jacobian(mat_admitancia, theta_v, swing_bus, last_P_Q):
 
     #El jacobiano se lo pasa a formato csr para poder asignarle valores
     if not sparse.isspmatrix_csr(mat_admitancia):
-        J11 = J12 = J21 = J22 = mat_admitancia.tocsr()
+        Jn = mat_admitancia.tocsr()
+        J11 = J12 = J21 = J22 = Jn.astype(np.float64)
 
     #La matriz de admitancia se la pasa a formato coo para poder iterar sobre los elemtnos
     if not sparse.isspmatrix_coo(mat_admitancia):
