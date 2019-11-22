@@ -32,6 +32,8 @@ def read(archivo):
             generation = np.zeros(n, dtype=np.complex128)      # P + jQ
             voltage_phase = np.zeros((n,2), dtype=np.float)    # V(por unidad), angulo en grados
 
+            PV_buses = np.array([], dtype=int)
+
             #Leo las siguientes n lineas con la info de cada nodo
             for i in range(n):
                 line = cdf.readline()
@@ -42,9 +44,15 @@ def read(archivo):
                 load[i] = complex(float(words[9]) , float(words[10]))
                 generation[i] = complex(float(words[11]) , float(words[12]))
 
+
+
                 #Asigno el swing_bus
                 if(int(words[6])==3):
                     swing_bus = i
+
+                #PV buses
+                if (int(words[6]) == 2):
+                    PV_buses = np.hstack((PV_buses,[i]))
 
             #Leo el archivo hasta llegar a la sección de BRANCH DATA
             while words[0] != 'BRANCH':
@@ -53,7 +61,7 @@ def read(archivo):
                 words = [item for item in words if item]  #Elimino los elementos vacios
 
             #Leo las lineas de la sección Branch
-            while True:
+            while True:         #Salgo con un break en el próximo if
                 line = cdf.readline()
                 words = line.split(' ')
                 words = [item for item in words if item]  # Elimino los elementos vacios
@@ -65,21 +73,27 @@ def read(archivo):
                 i = int(words[0]) - 1
                 j = int(words[1]) - 1       # La impedancia entre el nodo i y el nodo j
                 mat_admitancia[i,j] = mat_admitancia[j,i] = -1/complex(float(words[6]) , float(words[7]))  #Asigno la impendancia R + jX
+                mat_admitancia[i,i] = mat_admitancia[j,j] = complex(0,float(words[8]))  #En la diagonal sumo Charging B ''la impedancia paralelo del equivalente pi''
 
             #Recorro la matriz de admitacnia para asignarle a la diagonal la suma de las filas
             for i in range(0,n):
                 for j in range(0,n):
                     if j != i:
-                        mat_admitancia[i,i] = mat_admitancia[i,i] - mat_admitancia[i,j]
+                        mat_admitancia[i,i] += -mat_admitancia[i,j]
+                        #mat_admitancia[j,j] += -mat_admitancia[i,j]
 
-            return n, mat_admitancia, load, generation, voltage_phase, swing_bus
+            np.savetxt('Ybus.txt', mat_admitancia, fmt='%+9.4f', delimiter='  ')
+
+            return n, mat_admitancia, load, generation, voltage_phase, swing_bus, PV_buses
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    n, matriz_de_admitacnia, *_ = read("ieee14cdf.txt")
+    n, mat, load, generation, voltage_phase, swing_bus, PV_buses = read("ieee14cdf.txt")
 
-    print(matriz_de_admitacnia)
-    mat_plot = matriz_de_admitacnia != 0
+    print(n, ' nodos')
+    print('PV buses: ', PV_buses)
+    print(mat)
+    mat_plot = mat != 0
     plt.matshow(mat_plot)
     plt.show()

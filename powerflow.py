@@ -1,4 +1,4 @@
-
+# coding=utf-8
 import numpy as np
 import scipy as sp
 import scipy.sparse as sparse
@@ -13,11 +13,12 @@ class powerflow:
 
     '''
     def __init__(self, filename=''):
-        n, mat_admitancia, load, generation, voltage_phase, swing_bus = cdf.read(filename)
+        n, mat_admitancia, load, generation, voltage_phase, swing_bus, PV_buses = cdf.read(filename)
 
         self.n = n
         self.Y = sparse.coo_matrix(mat_admitancia)
         self.swing_bus = swing_bus
+        self.PV_buses = PV_buses
 
         delta_PQ = generation-load
         self.P = delta_PQ.real
@@ -31,36 +32,44 @@ class powerflow:
         :parameter x: un vactor de 2*(n-1) donde n es la cantidad de nodos del sistema
         :returns jacobiano: una matriz de 2(n-1) x 2(n-1)
         '''
-
         return jacobian(self.Y, x, self.swing_bus, self.last_P_Q)
 
     def f(self, x):
-        ''' Computa la potencia P y Q para un valor de tensión y ángulo dado
+        ''' Computa deltaP y deltaQ para un valor de tensión y ángulo dado
         :parameter x un vactor de 2*(n-1) donde n es la cantidad de nodos del sistema
-        :returns PQ: una vector de 2(n-1), '''
+        :returns delta_PQ: una vector de 2(n-1)'''
         self.last_P_Q = P_Q(self.Y, x)
-        return self.P_Q_inj - self.last_P_Q
+        return (self.P_Q_inj - self.last_P_Q)
 
     def solve_newton(self, initial_voltage=1, initial_angle=0):
         theta = initial_angle * np.ones(self.n-1)
         v = initial_voltage * np.ones(self.n-1)
 
         x = np.append(theta, v)
-        #delta_x = convergencia + 1
 
         #while(delta_x < convergencia):
         for i in range(1):
-            f = self.f(x)
-            J = self.J(x)
+            func = self.f(x)
+            #self.disp_matrix(np.vstack([func, func]))
 
-            self.disp_matrix(J)
-            self.disp_matrix(self.Y)
+            jaco = self.J(x)
+            J_to_disp = jaco.todense()
+            #self.disp_matrix(J_to_disp[:self.n-1,:self.n-1])
 
-            print(np.shape(f))
-            print(J.get_shape())
-            a = sparse_alg.spsolve(J,-f)
+            #Jacobiano reducido
+            rJ = jaco.todense()
+            #Las filas a eliminar son aquellas que corresponden a la dQ/dtheta de un PV bus
+            filas_a_eliminar = self.PV_buses- 1 + self.n-1
+            #Las columas a eliminar son aquellas que corresponden a la dP/dV de un PV bus
+            columnas_a_eliminar = filas_a_eliminar
+            rJ = np.delete(rJ, filas_a_eliminar, 0)
+            rJ = np.delete(rJ, columnas_a_eliminar, 1)
+
+            #self.disp_matrix(rJ)
+            #a = sparse_alg.spsolve(jaco,-func)
+            func_reducido = np.delete(func, columnas_a_eliminar)
+            a = np.linalg.solve(rJ, -func_reducido)
             xn = a - x
-            #delta_x = sp.linalg.norm(xn-x)
             x = xn
 
         return x
@@ -70,12 +79,12 @@ class powerflow:
         if sparse.issparse(mat):
             mat = mat.todense()
 
-        mat_plot = mat != 0
+        mat_plot = mat != 0.0
         plt.matshow(mat_plot)
         plt.show()
 
 
-
+#---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     ieee14bus = powerflow('IEEE14cdf.txt')
@@ -83,5 +92,5 @@ if __name__ == '__main__':
     start = time()
     x = ieee14bus.solve_newton()
     end = time()
-    print(x)
+    #print(x)
     print('Tiempo: ', end-start, 's')

@@ -28,11 +28,9 @@ def P_Q(mat_admitancia, theta_v, swing_bus=0):
     Q = np.zeros(n, dtype=np.float64)
 
     # Se agrega el ángulo y la tensión del swing bus
-    #theta = np.append([0],theta_v[0:n-1])
     theta = np.concatenate(([0], theta_v[:n-1]))
-    v = np.concatenate(([1], theta_v[n-2:]))
-    #v = np.append([1], theta_v[n-1:-1])
-    cantidad = 0
+    v = np.concatenate(([1.06], theta_v[n-1:]))
+
     for i, j, Y in zip(mat_admitancia.row, mat_admitancia.col, mat_admitancia.data):
         #Saltear el swing_bus
         if (i == swing_bus):
@@ -42,32 +40,31 @@ def P_Q(mat_admitancia, theta_v, swing_bus=0):
         G_ij = Y.real
 
         theta_i = theta[i]
-        theta_j = theta_v[j]
-        v_j = v[j]
+        theta_j = theta[j]
         delta_theta = theta_i - theta_j
-        a = v_j * G_ij
-        b = v_j * B_ij
+        v_i = v[i]
+        v_j = v[j]
+        a = v_i * v_j * G_ij
+        b = v_i * v_j * B_ij
 
         P[i] += a * cos(delta_theta) + b * sin(delta_theta)
         Q[i] += a * sin(delta_theta) - b * cos(delta_theta)
 
-    for i in range(n):
-        P = P * v[i]
-
     # En realidad para lograr que el algoritmo funcione con el swing bus en cualquier lugar se debería modificar los indices y realizar una doble partición
     # Se une la P y Q en un sólo vector, dejando de lado la primer ubicaicón porque es el swing bus.
-    P_Q = np.append(P[1:], Q[1:])
-
-    return P_Q
+    P_Q = np.hstack((P[1:], Q[1:]))
+    return P_Q * 100
 
 
 if __name__ == '__main__':
     import IEEE_cdf as cdf
-    n, mat, load, generation, voltage_phase, swing_bus = cdf.read('ieee14cdf.txt')
+    n, mat, load, generation, voltage_phase, swing_bus, PV_buses = cdf.read('ieee14cdf.txt')
 
+
+    #v = np.ones(n, dtype=float)
     v = voltage_phase[1:,0]
     phase = voltage_phase[1:,1]
-
+    #phase = np.zeros(n, dtype=float)
     phase = np.deg2rad(phase)
     theta_v = np.concatenate((phase,v))
     mat = sparse.coo_matrix(mat)
@@ -75,12 +72,19 @@ if __name__ == '__main__':
     PandQ = P_Q(mat, theta_v)
 
     P = PandQ[:(n-1)]
-    Q = PandQ[(n-1):-1]
+    Q = PandQ[(n-1):]
 
     print("Calculated P")
-    print(np.around(100*P, 1))
+    print(np.around(P, 1))
 
     P = generation.real - load.real
     print("P from the file")
     print(P[1:])
-    #print(Q)
+
+    print("Calculated Q")
+    print(np.around(Q, 1))
+
+    Q = generation.imag - load.imag
+    print("Q from the file")
+    print(Q[1:])
+
